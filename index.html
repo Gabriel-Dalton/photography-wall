@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Photography Portfolio</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="gallery-container" id="galleryContainer"></div>
+
+    <!-- Lightbox -->
+    <div class="lightbox" id="lightbox" role="dialog" aria-label="Image viewer" aria-hidden="true">
+        <button class="lightbox-close" id="lightboxClose" aria-label="Close lightbox">&times;</button>
+        <button class="lightbox-nav lightbox-prev" id="lightboxPrev" aria-label="Previous image">‹</button>
+        <button class="lightbox-nav lightbox-next" id="lightboxNext" aria-label="Next image">›</button>
+        <div class="lightbox-content">
+            <img id="lightboxImage" src="" alt="" loading="eager" decoding="async">
+        </div>
+        <div class="lightbox-counter" id="lightboxCounter"></div>
+    </div>
+
+    <footer class="footer">
+        <a href="https://github.com" target="_blank" rel="noopener noreferrer">GitHub</a>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>
+
