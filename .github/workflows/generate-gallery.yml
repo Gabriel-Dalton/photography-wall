@@ -16,6 +16,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -25,8 +27,18 @@ jobs:
       - name: Install dependencies
         run: npm install || echo "No dependencies needed"
       
+      - name: List photos directory
+        run: |
+          echo "Photos found:"
+          find photos -type f -name "*.jpg" -o -name "*.jpeg" -o -name "*.png" -o -name "*.webp" -o -name "*.gif" -o -name "*.avif" || echo "No supported images found"
+      
       - name: Generate gallery.json
         run: npm run generate
+      
+      - name: Show generated gallery.json
+        run: |
+          echo "Generated gallery.json:"
+          cat gallery.json || echo "gallery.json not found"
       
       - name: Commit and push gallery.json
         run: |
@@ -36,7 +48,8 @@ jobs:
           if ! git diff --staged --quiet; then
             git commit -m "Auto-generate gallery.json [skip ci]"
             git push
+            echo "✓ Successfully pushed updated gallery.json"
           else
-            echo "No changes to commit"
+            echo "No changes to gallery.json"
           fi
 

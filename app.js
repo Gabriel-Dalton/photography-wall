@@ -17,7 +17,10 @@ const lightboxCounter = document.getElementById('lightboxCounter');
 // Initialize
 async function init() {
     try {
-        const response = await fetch('gallery.json');
+        // Add cache-busting to ensure we get the latest gallery.json
+        const response = await fetch(`gallery.json?t=${Date.now()}`, {
+            cache: 'no-cache'
+        });
         if (!response.ok) {
             throw new Error('Failed to load gallery.json');
         }

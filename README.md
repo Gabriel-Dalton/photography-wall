@@ -215,9 +215,19 @@ Edit the footer in `index.html`:
 
 ### Images not loading
 
+- **Hard refresh your browser** (Ctrl+Shift+R or Cmd+Shift+R) to clear cache
 - Check browser console for errors
 - Verify image paths in `gallery.json` are correct
 - Ensure images are committed to the repository
+- **Supported formats**: JPG, JPEG, PNG, WebP, GIF, AVIF (RAW formats like .CR2 are not supported - convert to JPG first)
+
+### New images not appearing after GitHub Action runs
+
+1. **Check the Actions tab** in your GitHub repo to see if the workflow completed successfully
+2. **Verify the image format** - only web-friendly formats work (JPG, PNG, WebP, etc.). RAW files (.CR2, .NEF, etc.) won't work
+3. **Hard refresh your browser** - the page may be using a cached `gallery.json`
+4. **Check `gallery.json`** in your repo to see if it was updated with the new image
+5. **Wait a few minutes** - GitHub Pages can take a few minutes to update
 
 ### Build script fails
 
