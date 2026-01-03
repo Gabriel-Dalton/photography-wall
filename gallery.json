@@ -1,14 +1,8 @@
 [
   {
-    "src": "photos/man.jpg",
-    "w": null,
-    "h": null,
-    "alt": "man"
-  },
-  {
     "src": "photos/final_mexico_flag.jpg",
-    "w": null,
-    "h": null,
+    "w": 3456,
+    "h": 5184,
     "alt": "final_mexico_flag"
   }
 ]
