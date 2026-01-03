@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { execSync } from 'child_process';
 import sharp from 'sharp';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -53,13 +54,43 @@ async function getImageData(filePath) {
             if (!fs.existsSync(jpgPath)) {
                 console.log(`Converting ${relativePath} to JPG...`);
                 try {
-                    await sharp(filePath)
-                        .jpeg({ quality: 92, mozjpeg: true })
-                        .toFile(jpgPath);
-                    console.log(`✓ Converted to ${jpgRelativePath}`);
+                    try {
+                        execSync(`dcraw -c -w -q 3 "${filePath}" | convert - -quality 92 "${jpgPath}"`, { stdio: 'pipe' });
+                        console.log(`✓ Converted to ${jpgRelativePath} using dcraw + ImageMagick`);
+                    } catch (dcrawError) {
+                        try {
+                            execSync(`convert "${filePath}" -quality 92 "${jpgPath}"`, { stdio: 'pipe' });
+                            console.log(`✓ Converted to ${jpgRelativePath} using ImageMagick`);
+                        } catch (imError) {
+                            try {
+                                const tempTiff = path.join(dir, `${basename}.tiff`);
+                                execSync(`dcraw -w -o 0 -q 3 -T "${filePath}"`, { stdio: 'pipe', cwd: dir });
+                                if (fs.existsSync(tempTiff)) {
+                                    execSync(`convert "${tempTiff}" -quality 92 "${jpgPath}"`, { stdio: 'pipe' });
+                                    fs.unlinkSync(tempTiff);
+                                    console.log(`✓ Converted to ${jpgRelativePath} using dcraw (TIFF) + ImageMagick`);
+                                } else {
+                                    throw new Error('dcraw did not create output file');
+                                }
+                            } catch (tiffError) {
+                                try {
+                                    await sharp(filePath)
+                                        .jpeg({ quality: 92, mozjpeg: true })
+                                        .toFile(jpgPath);
+                                    console.log(`✓ Converted to ${jpgRelativePath} using Sharp`);
+                                } catch (sharpError) {
+                                    console.warn(`Could not convert ${relativePath} with any method`);
+                                    console.warn(`  dcraw (pipe) error: ${dcrawError.message}`);
+                                    console.warn(`  ImageMagick error: ${imError.message}`);
+                                    console.warn(`  dcraw (TIFF) error: ${tiffError.message}`);
+                                    console.warn(`  Sharp error: ${sharpError.message}`);
+                                    return null;
+                                }
+                            }
+                        }
+                    }
                 } catch (convError) {
                     console.warn(`Could not convert ${relativePath}: ${convError.message}`);
-                    console.warn(`  Make sure you have libvips installed for CR2 support`);
                     return null;
                 }
             }
