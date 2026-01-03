@@ -13,6 +13,9 @@
     "portfolio"
   ],
   "author": "",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "sharp": "^0.33.0"
+  }
 }
 

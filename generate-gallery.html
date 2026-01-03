@@ -81,6 +81,7 @@
             <li>Copy the output and save it as <code>gallery.json</code> in your project root</li>
         </ol>
         <p><strong>Note:</strong> Make sure to maintain the folder structure when selecting files. The script will preserve relative paths.</p>
+        <p><strong>CR2 Files:</strong> RAW files (.cr2) cannot be processed in the browser. Use the Node.js script (<code>npm run generate</code>) which will automatically convert CR2 files to JPG.</p>
     </div>
 
     <div>
@@ -125,43 +126,34 @@
             for (let i = 0; i < selectedFiles.length; i++) {
                 const file = selectedFiles[i];
                 
-                // Skip non-image files
                 if (!file.type.startsWith('image/')) continue;
 
-                // Get relative path
                 let relativePath = file.webkitRelativePath || file.name;
                 
-                // Normalize path separators
                 relativePath = relativePath.replace(/\\/g, '/');
                 
-                // If webkitRelativePath exists, try to extract photos/... part
                 if (file.webkitRelativePath) {
-                    // Find 'photos' in the path and keep everything from there
                     const photosIndex = relativePath.toLowerCase().indexOf('photos/');
                     if (photosIndex !== -1) {
                         relativePath = relativePath.substring(photosIndex);
                     } else {
-                        // If no 'photos' folder found, prepend it
                         relativePath = 'photos/' + relativePath;
                     }
                 } else {
-                    // No folder structure, just use filename in photos/
                     relativePath = 'photos/' + file.name;
                 }
 
                 try {
-                    // Get image dimensions
                     const dimensions = await getImageDimensions(file);
                     
                     galleryItems.push({
                         src: relativePath,
                         w: dimensions.width,
                         h: dimensions.height,
-                        alt: file.name.replace(/\.[^/.]+$/, '') // Remove extension
+                        alt: file.name.replace(/\.[^/.]+$/, '')
                     });
                 } catch (error) {
                     console.error(`Error processing ${file.name}:`, error);
-                    // Add item without dimensions as fallback
                     galleryItems.push({
                         src: relativePath,
                         w: null,
@@ -171,16 +163,13 @@
                 }
             }
 
-            // Sort by filename (newest first - you can modify this)
             galleryItems.sort((a, b) => {
                 return b.src.localeCompare(a.src);
             });
 
-            // Generate JSON
             const jsonOutput = JSON.stringify(galleryItems, null, 2);
             outputDiv.textContent = jsonOutput;
             
-            // Create download link
             const blob = new Blob([jsonOutput], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');

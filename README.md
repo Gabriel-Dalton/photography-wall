@@ -98,12 +98,11 @@ Now when you push photos to `/photos`, the gallery will update automatically!
 
 ### Gallery Generation
 
-The build script (`scripts/generate-gallery.mjs`) does the following:
+The build script (`scripts/generate-gallery-simple.mjs`) does the following:
 
 1. **Scans** the `/photos` directory recursively for image files
-2. **Reads** image dimensions and metadata using Sharp
-3. **Sorts** images by modification date (newest first), falling back to filename if dates are equal
-4. **Generates** `gallery.json` with an array of image objects:
+2. **Sorts** images by modification date (newest first), falling back to filename if dates are equal
+3. **Generates** `gallery.json` with an array of image objects:
    ```json
    [
      {
@@ -136,6 +135,7 @@ The build script (`scripts/generate-gallery.mjs`) does the following:
 - **WebP** or **AVIF** - Best compression and quality (recommended)
 - **JPEG** - Universal support, good for photos
 - **PNG** - Best for graphics with transparency
+- **CR2** (Canon RAW) - Automatically converted to JPG when using `npm run generate`
 
 ### Sizes
 
@@ -151,6 +151,28 @@ The gallery will work with any size, but smaller files load faster. Consider usi
 - [ImageOptim](https://imageoptim.com/) - Desktop app
 - [Sharp](https://sharp.pixelplumbing.com/) - Node.js library (already in dependencies)
 
+### CR2 (Canon RAW) Files
+
+**CR2 files are now supported!** When you run `npm run generate`, the script will:
+
+1. **Automatically detect** CR2 files in your `/photos` folder
+2. **Convert them to JPG** (92% quality, optimized) in the same directory
+3. **Use the JPG version** in the gallery (browsers can't display CR2 directly)
+
+**Important notes:**
+- CR2 files are typically 20-40MB each, which can be too large for GitHub
+- The converted JPG files are much smaller (usually 2-5MB)
+- You can choose to:
+  - **Commit both** CR2 and JPG files (keeps originals, but uses more space)
+  - **Commit only JPG** files (recommended - add `*.cr2` to `.gitignore`)
+  - **Keep CR2 locally** and only push JPG files
+
+**To use CR2 files:**
+1. Place your CR2 files in the `/photos` folder
+2. Run `npm install` (to install Sharp library)
+3. Run `npm run generate` (converts CR2 → JPG automatically)
+4. The gallery will use the converted JPG files
+
 ## File Structure
 
 ```
@@ -164,7 +186,7 @@ photography-wall/
 │   ├── image1.jpg
 │   └── ...
 ├── scripts/
-│   └── generate-gallery.mjs  # Node.js build script (optional)
+│   └── generate-gallery-simple.mjs  # Node.js build script (optional)
 ├── package.json        # Node.js dependencies (optional)
 └── README.md          # This file
 ```
@@ -187,13 +209,13 @@ Edit CSS variables in `styles.css`:
 
 Modify the `--spacing` variable and grid gap values in `styles.css`.
 
-### Change Footer Link
+### Change Footer
 
 Edit the footer in `index.html`:
 
 ```html
 <footer class="footer">
-    <a href="https://your-link.com" target="_blank" rel="noopener noreferrer">Your Link</a>
+    <p>Your Name <span id="copyright"></span></p>
 </footer>
 ```
 
@@ -219,12 +241,12 @@ Edit the footer in `index.html`:
 - Check browser console for errors
 - Verify image paths in `gallery.json` are correct
 - Ensure images are committed to the repository
-- **Supported formats**: JPG, JPEG, PNG, WebP, GIF, AVIF (RAW formats like .CR2 are not supported - convert to JPG first)
+- **Supported formats**: JPG, JPEG, PNG, WebP, GIF, AVIF, CR2 (CR2 files are automatically converted to JPG when using `npm run generate`)
 
 ### New images not appearing after GitHub Action runs
 
 1. **Check the Actions tab** in your GitHub repo to see if the workflow completed successfully
-2. **Verify the image format** - only web-friendly formats work (JPG, PNG, WebP, etc.). RAW files (.CR2, .NEF, etc.) won't work
+2. **Verify the image format** - CR2 files are automatically converted to JPG when using `npm run generate`. The browser-based generator cannot process CR2 files.
 3. **Hard refresh your browser** - the page may be using a cached `gallery.json`
 4. **Check `gallery.json`** in your repo to see if it was updated with the new image
 5. **Wait a few minutes** - GitHub Pages can take a few minutes to update
