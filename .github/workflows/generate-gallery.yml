@@ -27,7 +27,7 @@ jobs:
       - name: Install system dependencies for CR2 support
         run: |
           sudo apt-get update
-          sudo apt-get install -y imagemagick dcraw ufraw ufraw-batch
+          sudo apt-get install -y imagemagick dcraw
       
       - name: Install dependencies
         run: npm install || echo "No dependencies needed"
