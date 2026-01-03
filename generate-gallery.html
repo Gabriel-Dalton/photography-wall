@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gallery Generator</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 1rem;
+            line-height: 1.6;
+        }
+        h1 { color: #333; }
+        .info {
+            background: #e3f2fd;
+            padding: 1rem;
+            border-radius: 4px;
+            margin: 1rem 0;
+        }
+        input[type="file"] {
+            margin: 1rem 0;
+            padding: 0.5rem;
+        }
+        button {
+            background: #2196F3;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin: 0.5rem 0;
+        }
+        button:hover {
+            background: #1976D2;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        #output {
+            margin-top: 2rem;
+            padding: 1rem;
+            background: #f5f5f5;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .status {
+            margin: 1rem 0;
+            padding: 0.5rem;
+            border-radius: 4px;
+        }
+        .status.success {
+            background: #c8e6c9;
+            color: #2e7d32;
+        }
+        .status.error {
+            background: #ffcdd2;
+            color: #c62828;
+        }
+        .status.info {
+            background: #fff3e0;
+            color: #e65100;
+        }
+    </style>
+</head>
+<body>
+    <h1>📸 Gallery Generator</h1>
+    
+    <div class="info">
+        <strong>How to use:</strong>
+        <ol>
+            <li>Select all images from your <code>/photos</code> folder (Ctrl+A or Cmd+A)</li>
+            <li>Click "Generate Gallery JSON"</li>
+            <li>Copy the output and save it as <code>gallery.json</code> in your project root</li>
+        </ol>
+        <p><strong>Note:</strong> Make sure to maintain the folder structure when selecting files. The script will preserve relative paths.</p>
+    </div>
+
+    <div>
+        <label for="fileInput">
+            <strong>Select images from /photos folder:</strong>
+        </label>
+        <input type="file" id="fileInput" multiple accept="image/*" webkitdirectory directory>
+        <div id="status"></div>
+        <button id="generateBtn" onclick="generateGallery()" disabled>Generate Gallery JSON</button>
+    </div>
+
+    <div id="output"></div>
+
+    <script>
+        let selectedFiles = [];
+
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            selectedFiles = Array.from(e.target.files);
+            const statusDiv = document.getElementById('status');
+            const generateBtn = document.getElementById('generateBtn');
+            
+            if (selectedFiles.length > 0) {
+                statusDiv.innerHTML = `<div class="status info">Selected ${selectedFiles.length} image(s)</div>`;
+                generateBtn.disabled = false;
+            } else {
+                statusDiv.innerHTML = '';
+                generateBtn.disabled = true;
+            }
+        });
+
+        async function generateGallery() {
+            const statusDiv = document.getElementById('status');
+            const outputDiv = document.getElementById('output');
+            const generateBtn = document.getElementById('generateBtn');
+            
+            generateBtn.disabled = true;
+            statusDiv.innerHTML = '<div class="status info">Processing images... This may take a moment.</div>';
+            outputDiv.textContent = '';
+
+            const galleryItems = [];
+
+            for (let i = 0; i < selectedFiles.length; i++) {
+                const file = selectedFiles[i];
+                
+                // Skip non-image files
+                if (!file.type.startsWith('image/')) continue;
+
+                // Get relative path
+                let relativePath = file.webkitRelativePath || file.name;
+                
+                // Normalize path separators
+                relativePath = relativePath.replace(/\\/g, '/');
+                
+                // If webkitRelativePath exists, try to extract photos/... part
+                if (file.webkitRelativePath) {
+                    // Find 'photos' in the path and keep everything from there
+                    const photosIndex = relativePath.toLowerCase().indexOf('photos/');
+                    if (photosIndex !== -1) {
+                        relativePath = relativePath.substring(photosIndex);
+                    } else {
+                        // If no 'photos' folder found, prepend it
+                        relativePath = 'photos/' + relativePath;
+                    }
+                } else {
+                    // No folder structure, just use filename in photos/
+                    relativePath = 'photos/' + file.name;
+                }
+
+                try {
+                    // Get image dimensions
+                    const dimensions = await getImageDimensions(file);
+                    
+                    galleryItems.push({
+                        src: relativePath,
+                        w: dimensions.width,
+                        h: dimensions.height,
+                        alt: file.name.replace(/\.[^/.]+$/, '') // Remove extension
+                    });
+                } catch (error) {
+                    console.error(`Error processing ${file.name}:`, error);
+                    // Add item without dimensions as fallback
+                    galleryItems.push({
+                        src: relativePath,
+                        w: null,
+                        h: null,
+                        alt: file.name.replace(/\.[^/.]+$/, '')
+                    });
+                }
+            }
+
+            // Sort by filename (newest first - you can modify this)
+            galleryItems.sort((a, b) => {
+                return b.src.localeCompare(a.src);
+            });
+
+            // Generate JSON
+            const jsonOutput = JSON.stringify(galleryItems, null, 2);
+            outputDiv.textContent = jsonOutput;
+            
+            // Create download link
+            const blob = new Blob([jsonOutput], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'gallery.json';
+            a.textContent = 'Download gallery.json';
+            a.style.display = 'inline-block';
+            a.style.marginTop = '1rem';
+            a.style.padding = '0.5rem 1rem';
+            a.style.background = '#4CAF50';
+            a.style.color = 'white';
+            a.style.textDecoration = 'none';
+            a.style.borderRadius = '4px';
+            outputDiv.appendChild(a);
+            
+            statusDiv.innerHTML = `<div class="status success">✓ Generated gallery.json with ${galleryItems.length} images!</div>`;
+            generateBtn.disabled = false;
+        }
+
+        function getImageDimensions(file) {
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                const url = URL.createObjectURL(file);
+                
+                img.onload = function() {
+                    URL.revokeObjectURL(url);
+                    resolve({
+                        width: img.naturalWidth,
+                        height: img.naturalHeight
+                    });
+                };
+                
+                img.onerror = function() {
+                    URL.revokeObjectURL(url);
+                    reject(new Error('Failed to load image'));
+                };
+                
+                img.src = url;
+            });
+        }
+    </script>
+</body>
+</html>
+
