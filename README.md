@@ -32,11 +32,14 @@ photos/
 
 **✨ Option A: Automatic (Easiest - Just push photos!)**
 
-The GitHub Action will automatically generate `gallery.json` when you push photos to the `/photos` folder. **You don't need to do anything!** Just:
+The GitHub Action will automatically generate `gallery.json` and convert CR2 files to JPG when you push photos to the `/photos` folder. **You don't need to do anything!** Just:
 
-1. Upload your photos to `/photos` folder on GitHub
+1. Upload your photos (including CR2 files) to `/photos` folder on GitHub
 2. Push the changes
-3. The GitHub Action runs automatically and updates `gallery.json`
+3. The GitHub Action runs automatically:
+   - Converts CR2 files to JPG (if any)
+   - Updates `gallery.json`
+   - Commits the converted JPG files back to the repo
 4. Your gallery updates automatically!
 
 **Option B: Browser-Based Generator (No npm required)**

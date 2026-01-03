@@ -30,9 +30,9 @@ jobs:
       - name: List photos directory
         run: |
           echo "Photos found:"
-          find photos -type f -name "*.jpg" -o -name "*.jpeg" -o -name "*.png" -o -name "*.webp" -o -name "*.gif" -o -name "*.avif" || echo "No supported images found"
+          find photos -type f \( -name "*.jpg" -o -name "*.jpeg" -o -name "*.png" -o -name "*.webp" -o -name "*.gif" -o -name "*.avif" -o -name "*.cr2" \) || echo "No supported images found"
       
-      - name: Generate gallery.json
+      - name: Generate gallery.json and convert CR2 files
         run: npm run generate
       
       - name: Show generated gallery.json
@@ -40,16 +40,17 @@ jobs:
           echo "Generated gallery.json:"
           cat gallery.json || echo "gallery.json not found"
       
-      - name: Commit and push gallery.json
+      - name: Commit and push changes
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git add gallery.json
+          find photos \( -name "*.jpg" -o -name "*.jpeg" \) -type f | xargs git add 2>/dev/null || true
           if ! git diff --staged --quiet; then
-            git commit -m "Auto-generate gallery.json [skip ci]"
+            git commit -m "Auto-generate gallery.json and convert CR2 files [skip ci]"
             git push
-            echo "✓ Successfully pushed updated gallery.json"
+            echo "✓ Successfully pushed updated gallery.json and converted JPG files"
           else
-            echo "No changes to gallery.json"
+            echo "No changes to commit"
           fi
 
