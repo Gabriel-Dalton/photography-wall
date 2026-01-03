@@ -30,23 +30,30 @@ photos/
 
 ### 2. Generate Gallery
 
-**Option A: Browser-Based Generator (Recommended - No npm required!)**
+**✨ Option A: Automatic (Easiest - Just push photos!)**
+
+The GitHub Action will automatically generate `gallery.json` when you push photos to the `/photos` folder. **You don't need to do anything!** Just:
+
+1. Upload your photos to `/photos` folder on GitHub
+2. Push the changes
+3. The GitHub Action runs automatically and updates `gallery.json`
+4. Your gallery updates automatically!
+
+**Option B: Browser-Based Generator (No npm required)**
 
 1. Open `generate-gallery.html` in your web browser
 2. Click "Select images from /photos folder" and select your entire `/photos` folder (or individual images)
 3. Click "Generate Gallery JSON"
 4. Download the generated `gallery.json` file and place it in your project root
 
-**Option B: Node.js Script (Requires npm)**
+**Option C: Node.js Script (Optional)**
 
-If you have Node.js installed:
+If you have Node.js installed and want to test locally:
 
 ```bash
 npm install
 npm run generate
 ```
-
-This will scan the `/photos` folder and create `gallery.json` with all your images and their metadata.
 
 ### 3. Test Locally
 
@@ -75,9 +82,17 @@ Then open `http://localhost:8000` in your browser.
 
 Your site will be available at `https://[username].github.io/[repository-name]`
 
-**Important:** After adding new photos, remember to:
-1. Regenerate `gallery.json` using `generate-gallery.html` (or `npm run generate` if using Node.js)
-2. Commit and push the updated `gallery.json` file
+**Enable GitHub Actions (for automatic gallery generation):**
+1. Go to **Settings** → **Actions** → **General**
+2. Under **Workflow permissions**, select **Read and write permissions**
+3. Check **Allow GitHub Actions to create and approve pull requests**
+4. Click **Save**
+
+Now when you push photos to `/photos`, the gallery will update automatically!
+
+**Important:** 
+- If using the **GitHub Action** (Option A): Just push your photos - the gallery updates automatically!
+- If using **manual methods** (Options B or C): Remember to regenerate and commit `gallery.json` after adding photos
 
 ## How It Works
 

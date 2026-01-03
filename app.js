@@ -64,27 +64,25 @@ function createGalleryItem(item, index) {
     // Use WebP/AVIF if available, fallback to original
     const src = item.src;
     
-    // Set aspect ratio placeholder to prevent layout shift
+    // Set aspect ratio placeholder - will be updated when image loads
+    // Default to square until we know the actual dimensions
+    itemDiv.style.paddingBottom = '100%';
+    itemDiv.style.height = '0';
+    itemDiv.style.position = 'relative';
+    itemDiv.style.gridRowEnd = 'span 30'; // Approximate for square
+    
+    // If dimensions are provided, use them
     if (item.w && item.h) {
         const aspectRatio = item.h / item.w;
         const paddingBottom = aspectRatio * 100;
         itemDiv.style.paddingBottom = `${paddingBottom}%`;
-        itemDiv.style.height = '0';
-        itemDiv.style.position = 'relative';
         
         // Calculate grid row span for masonry (grid-auto-rows: 10px)
-        // Account for typical column width (estimate 300px) and gap
         const estimatedWidth = 300; // Approximate column width
         const estimatedHeight = estimatedWidth * aspectRatio;
         const rowHeight = 10; // grid-auto-rows value
         const rowSpan = Math.ceil(estimatedHeight / rowHeight);
         itemDiv.style.gridRowEnd = `span ${rowSpan}`;
-    } else {
-        // Fallback: square aspect ratio
-        itemDiv.style.paddingBottom = '100%';
-        itemDiv.style.height = '0';
-        itemDiv.style.position = 'relative';
-        itemDiv.style.gridRowEnd = 'span 30'; // Approximate for square
     }
     
     // Lazy load with IntersectionObserver
@@ -106,13 +104,28 @@ function createGalleryItem(item, index) {
         rootMargin: '50px'
     });
     
+    // Update aspect ratio when image loads (if dimensions weren't provided)
+    img.onload = function() {
+        if (!item.w || !item.h) {
+            // Update aspect ratio based on actual image dimensions
+            const aspectRatio = img.naturalHeight / img.naturalWidth;
+            const paddingBottom = aspectRatio * 100;
+            itemDiv.style.paddingBottom = `${paddingBottom}%`;
+            
+            // Update grid row span
+            const estimatedWidth = 300;
+            const estimatedHeight = estimatedWidth * aspectRatio;
+            const rowHeight = 10;
+            const rowSpan = Math.ceil(estimatedHeight / rowHeight);
+            itemDiv.style.gridRowEnd = `span ${rowSpan}`;
+        }
+        itemDiv.classList.remove('loading');
+        itemDiv.classList.add('loaded');
+    };
+    
     // Preload first few images immediately
     if (index < 6) {
         img.src = src;
-        img.onload = () => {
-            itemDiv.classList.remove('loading');
-            itemDiv.classList.add('loaded');
-        };
     } else {
         observer.observe(itemDiv);
     }

@@ -1,0 +1,42 @@
+name: Generate Gallery
+
+on:
+  push:
+    paths:
+      - 'photos/**'
+      - '.github/workflows/generate-gallery.yml'
+  workflow_dispatch:
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Install dependencies
+        run: npm install || echo "No dependencies needed"
+      
+      - name: Generate gallery.json
+        run: npm run generate
+      
+      - name: Commit and push gallery.json
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add gallery.json
+          if ! git diff --staged --quiet; then
+            git commit -m "Auto-generate gallery.json [skip ci]"
+            git push
+          else
+            echo "No changes to commit"
+          fi
+

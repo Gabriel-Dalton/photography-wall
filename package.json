@@ -4,7 +4,7 @@
   "description": "A static photography portfolio gallery",
   "type": "module",
   "scripts": {
-    "generate": "node scripts/generate-gallery.mjs",
+    "generate": "node scripts/generate-gallery-simple.mjs",
     "build": "npm run generate"
   },
   "keywords": [
@@ -13,9 +13,6 @@
     "portfolio"
   ],
   "author": "",
-  "license": "MIT",
-  "devDependencies": {
-    "sharp": "^0.33.0"
-  }
+  "license": "MIT"
 }
 
