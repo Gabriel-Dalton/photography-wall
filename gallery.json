@@ -1,8 +1,8 @@
 [
-    {
-      "src": "photos/final_mexico_flag.jpg",
-      "w": 3456,
-      "h": 5184,
-      "alt": "final_mexico_flag"
-    }
-  ]
+  {
+    "src": "photos/final_mexico_flag.jpg",
+    "w": null,
+    "h": null,
+    "alt": "final_mexico_flag"
+  }
+]
